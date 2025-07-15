@@ -1,100 +1,105 @@
-import { useState } from "react";
-import InputMask from "react-input-mask";
+import { useState } from "react"
+import styles from './Form.module.css'
 
-import styles from './form.module.css'
+const Formulario = () => {
+    const [peso, setPeso] = useState(0.0)
+    const [altura, setAltura] = useState(0.0)
 
-function Form(props) {
-    const [result, setResult] = useState(null)
-    const [height, setHeight] = useState(0)
-    const [weight, setWeight] = useState(0)
+ // Função para formatar a altura corretamente
+    const handleAlturaChange = (e) => {
+    let valor = e.target.value;
 
-    function checkInputs() {
-        if (!height || !weight || height == "" || weight == "") {
-            return <p className={styles.adviceForm}><small>Todos os campos devem ser preenchidos</small></p>
-        } else {
-            return null
-        }
+    // Se o usuário digitar um número inteiro maior que 3 dígitos, ajustamos para o formato correto
+    if (valor.length >= 3 && !valor.includes(".")) {
+        let parteInteira = valor.slice(0, valor.length - 2);
+        let parteDecimal = valor.slice(-2);
+        valor = `${parteInteira}.${parteDecimal}`;
     }
 
-    const imcCount = () => {
-        const heightM = parseFloat(height)
-        const weightKg = parseFloat(weight)
+    setAltura(valor);
+    };
 
-        const imcCalc = weightKg / (heightM ** 2)
+    const renderizaResultado = () => {
+        const imc = peso/(altura * altura)
 
-        if (isNaN(heightM) || isNaN(weightKg) || heightM <= 0 || weightKg <= 0) {
-            return (
-                null
-            )
-        } else {
-            setResult(imcCalc.toFixed(2))
+        switch (true) {
+            case imc < 18.5:
+                return (
+                    <p className={styles.resposta}>
+                        Seu IMC é de <strong>{imc.toFixed(2)}</strong> e indica que você está <strong>abaixo do peso</strong>. Pode ser importante buscar orientação médica e nutricional para garantir que sua alimentação esteja adequada às suas necessidades.
+                    </p>
+                );
+            case imc >= 18.5 && imc < 24.99:
+                return (
+                    <p className={styles.resposta}>
+                        Parabéns! Seu IMC é de <strong>{imc.toFixed(2)}</strong> e está <strong>dentro da faixa considerada saudável</strong>. Manter uma alimentação equilibrada e praticar atividades físicas regularmente ajuda a preservar sua saúde.
+                    </p>
+                );
+            case imc >= 25 && imc < 29.99:
+                return (
+                    <p className={styles.resposta}>
+                        Seu IMC é de <strong>{imc.toFixed(2)}</strong> e indica <strong>sobrepeso</strong>. Pequenas mudanças na alimentação e no estilo de vida, como incluir mais exercícios físicos e reduzir alimentos ultraprocessados, podem ajudar a manter sua saúde.
+                    </p>
+                    )
+            case imc >= 30 && imc < 34.99:
+                return (
+                    <p className={styles.resposta}>
+                        Seu IMC é de <strong>{imc.toFixed(2)}</strong> e indica <strong>obesidade grau I</strong>. Isso pode aumentar o risco de problemas de saúde, como diabetes e hipertensão. Consultar um profissional de saúde pode ser um bom passo para melhorar seu bem-estar.
+                    </p>
+                    )
+            case imc >= 35 && imc < 39.99:
+                return (
+                    <p className={styles.resposta}>
+                        Seu IMC é de <strong>{imc.toFixed(2)}</strong> e indica <strong>obesidade grau II</strong>, que pode estar associada a maiores riscos de doenças crônicas. Procurar um médico e um nutricionista pode ajudar a encontrar estratégias para uma vida mais saudável.
+                    </p>
+                    )
+            case imc >= 40:
+                return (
+                    <p className={styles.resposta}>
+                        Seu IMC é de <strong>{imc.toFixed(2)}</strong> e está na faixa de <strong>obesidade grau III</strong>, considerada obesidade mórbida. Esse nível pode trazer sérios riscos à saúde. Um acompanhamento médico é essencial para definir as melhores estratégias de tratamento e melhoria da qualidade de vida.
+                    </p>
+                    )
+            default:
+                return (
+                    <p className={styles.resposta}>
+                        "Olá! Quer saber seu IMC? Favor se atentar ao virgula na altura. <br>
+                        </br> Informe seu peso e altura abaixo e descubra em qual categoria você se encaixa.<br>
+                        </br> Vamos lá! 💪📏⚖️"
+                    </p>
+                )
         }
-        return (
-            result
-        )
     }
 
     return (
-        <main className={styles.main}>
-            <form className={styles.form}>
-                <div className={styles.inputCalc}>
-                    <span>Altura <small>(ex. 1,75)</small></span>
-                    <InputMask className={styles.input} mask="9,99" type="text" onBlur={event => setHeight(parseFloat(event.target.value.replace(',', '.').trim()))} placeholder="Digite sua altura" />
-                </div>
-                <div className={styles.inputCalc}>
-                    <span>Peso <small>(ex. 70,90)</small></span>
-                    <input className={styles.input} type="number" onBlur={event => setWeight(parseFloat(event.target.value.replace(',', '.').trim()))} maxLength={5} placeholder="Digite seu peso" />
-                </div>
+        <div className={styles.container}>
+            <form>
+                <label htmlFor="peso">Seu peso (kg)</label>
+                <input
+                    type="number"
+                    id="peso"
+                    placeholder="Ex: 83.3"
+                    value={peso}
+                    onChange={(e) => setPeso(e.target.value)}
+                    step="0.1" // Permite casas decimais
+                    min="1"
+                    max="500"
+                />
+
+                <label htmlFor="altura">Sua altura (m)</label>
+                <input
+                    type="number"
+                    id="altura"
+                    placeholder="Ex: 1.85"
+                    value={altura}
+                    onChange={handleAlturaChange}
+                    step="0.01" // Permite valores decimais
+                    min="0.50"
+                    max="2.50"
+                />
+                {renderizaResultado()}
             </form>
-            {checkInputs()}
-            <button type="submit" className={styles.button} onClick={imcCount}>Calcular</button>
+        </div>
+    );
+};
 
-            <table className={styles.table}>
-                <thead>
-                    <tr>
-                        <td colSpan={3} className={styles.tableHead}>Veja a Interpretação do IMC</td>
-                    </tr>
-                </thead>
-                <tbody className={styles.tableRow}>
-                    <tr className={styles.tableTitle}>
-                        <td>IMC</td>
-                        <td>Classificação</td>
-                        <td>Obesidade <small>(Grau)</small></td>
-                    </tr>
-                    <tr className={`${result >= 1 && result <= 18.5 ? styles.warningImc : ''}`}>
-                        <td>Menor que 18,5</td>
-                        <td>Magreza</td>
-                        <td>0</td>
-                    </tr>
-                    <tr className={`${result >= 18.5 && result <= 24.9 ? styles.normalImc : ''}`}>
-                        <td>Entre 18,5 e 24,9</td>
-                        <td>Normal</td>
-                        <td>0</td>
-                    </tr>
-                    <tr className={`${result >= 25 && result <= 29.9 ? styles.warningImc : ''}`}>
-                        <td>Entre 25,0 e 29,9</td>
-                        <td>Sobrepeso</td>
-                        <td>1</td>
-                    </tr>
-                    <tr className={`${result >= 30 && result <= 39.9 ? styles.dangerImc : ''}`}>
-                        <td>Entre 30,0 e 39,9</td>
-                        <td>Obesidade</td>
-                        <td>2</td>
-                    </tr>
-                    <tr className={`${result >= 40 ? styles.dangerImc : ''}`}>
-                        <td>Maior que 40,0</td>
-                        <td>Obesidade Grave</td>
-                        <td>3</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <div className={styles.resultImc}>
-                <p>Seu IMC é:</p>
-                <span>{result}</span>
-            </div>
-        </main>
-    )
-}
-
-export default Form
+export default Formulario;
